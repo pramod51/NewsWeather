@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "525538580285",
+    "project_id": "newwether",
+    "storage_bucket": "newwether.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:525538580285:android:d477d76393d316d88f5754",
+        "android_client_info": {
+          "package_name": "com.wether.news"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "525538580285-q6g70s12p28gjjdr304qlrcelq6mv9mq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.wether.news",
+            "certificate_hash": "d3e114c3b355fae319a4cef77c55a891ab918e7a"
+          }
+        },
+        {
+          "client_id": "525538580285-dmrghd3op3hk97apc93gi3h4ebmprvp8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAKh3nxNlowqME2zT4RKobCovRL3bljMHE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "525538580285-dmrghd3op3hk97apc93gi3h4ebmprvp8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

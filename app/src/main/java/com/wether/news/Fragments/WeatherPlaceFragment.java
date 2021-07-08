@@ -1,6 +1,7 @@
 package com.wether.news.Fragments;
 
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -46,7 +47,7 @@ public class WeatherPlaceFragment extends Fragment  {
     private ExtendedFloatingActionButton addNew;
     private String uId= FirebaseAuth.getInstance().getCurrentUser().getUid();
     private NewsWeatherViewModel viewModel;
-
+    private ProgressDialog progressDialog;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -56,15 +57,25 @@ public class WeatherPlaceFragment extends Fragment  {
 
 
         viewModel = new ViewModelProvider(this).get(NewsWeatherViewModel.class);
+        showProgressDialog();
         viewModel.initWeather();
         viewModel.getNewsWeather().observe(getActivity(), new Observer<List<NewsweatherModel>>() {
             @Override
             public void onChanged(List<NewsweatherModel> newsweatherModels) {
                 if (adapter!=null)
                 adapter.notifyDataSetChanged();
+                hideProgressDialog();
             }
         });
-
+        viewModel.getIsUpdating().observe(getActivity(), new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean aBoolean) {
+                if (aBoolean)
+                    showProgressDialog();
+                else
+                    hideProgressDialog();
+            }
+        });
         initViews(view);
         addNew.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -102,6 +113,7 @@ public class WeatherPlaceFragment extends Fragment  {
 
 
     private void getImages(String searchQuery){
+        showProgressDialog();
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://pixabay.com/")
                 .addConverterFactory(GsonConverterFactory.create())
@@ -112,6 +124,7 @@ public class WeatherPlaceFragment extends Fragment  {
         imagesCall.enqueue(new Callback<Images>() {
             @Override
             public void onResponse(Call<Images> call, Response<Images> response) {
+                hideProgressDialog();
                 if (!response.isSuccessful()){
                     Toast.makeText(getContext(),"Something went wrong",Toast.LENGTH_LONG).show();
                     return;
@@ -129,6 +142,7 @@ public class WeatherPlaceFragment extends Fragment  {
 
             @Override
             public void onFailure(Call<Images> call, Throwable t) {
+                hideProgressDialog();
                 Toast.makeText(getContext(),t.getMessage(),Toast.LENGTH_LONG).show();
                 Log.v("tag",t.getMessage());
             }
@@ -158,5 +172,13 @@ public class WeatherPlaceFragment extends Fragment  {
 
     }
 
-
+    private void showProgressDialog() {
+        progressDialog = new ProgressDialog(getContext());
+        progressDialog.setMessage("Please wait");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+    }
+    private void hideProgressDialog() {
+        progressDialog.dismiss();
+    }
 }

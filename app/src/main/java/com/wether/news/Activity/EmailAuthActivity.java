@@ -3,6 +3,7 @@ package com.wether.news.Activity;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -33,6 +34,7 @@ public class EmailAuthActivity extends AppCompatActivity {
     private MaterialButton signIn,signUp;
     private final FirebaseAuth mAuth=FirebaseAuth.getInstance();
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,6 +106,7 @@ public class EmailAuthActivity extends AppCompatActivity {
     }
 
     private void emailPasswordAuthSignUP(String email,String password){
+        showProgressDialog();
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -133,11 +136,13 @@ public class EmailAuthActivity extends AppCompatActivity {
                                     Toast.LENGTH_LONG).show();
 
                         }
+                        hideProgressDialog();
                     }
                 });
     }
 
     private void emailPasswordAuthSignIN(String email,String password){
+        showProgressDialog();
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -160,6 +165,7 @@ public class EmailAuthActivity extends AppCompatActivity {
                         else {
                             Toast.makeText(EmailAuthActivity.this,"Authentication failed",Toast.LENGTH_LONG).show();
                         }
+                        hideProgressDialog();
                     }
                 });
     }
@@ -168,6 +174,14 @@ public class EmailAuthActivity extends AppCompatActivity {
         startActivity(new Intent(EmailAuthActivity.this,MainActivity.class));
         finish();
     }
-
+    private void showProgressDialog() {
+        progressDialog=new ProgressDialog(getApplicationContext());
+        progressDialog.setMessage("Please wait");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+    }
+    private void hideProgressDialog() {
+        progressDialog.dismiss();
+    }
 
 }

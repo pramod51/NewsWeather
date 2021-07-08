@@ -55,9 +55,14 @@ public class NewsWeatherAdapter extends RecyclerView.Adapter<NewsWeatherAdapter.
                         .child(model.getKey()).child("timeStamp").setValue(d.getTime());
                 Intent intent=new Intent(context, NewsWeatherActivity.class);
                 ArrayList<String> topics = new ArrayList<>();
-                for (NewsweatherModel model1:newsweatherModels)
+                ArrayList<String> images = new ArrayList<>();
+
+                for (NewsweatherModel model1:newsweatherModels) {
                     topics.add(model1.getTitle());
+                    images.add(model1.getImageUrl());
+                }
                 intent.putExtra("key",topics);
+                intent.putExtra("urls",images);
                 intent.putExtra("pos",position);
                 intent.putExtra("type",model.getType());
                 context.startActivity(intent);

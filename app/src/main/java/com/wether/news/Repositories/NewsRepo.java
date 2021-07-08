@@ -1,5 +1,7 @@
 package com.wether.news.Repositories;
 
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -28,10 +30,14 @@ public class NewsRepo {
     }
 
 
+
     private String uId= FirebaseAuth.getInstance().getCurrentUser().getUid();
     private static NewsRepo instance;
     List<NewsweatherModel> newsWeather=new ArrayList<>();
     MutableLiveData<List<NewsweatherModel>> newsWeatherData;
+    ProgressDialog progressDialog;
+    MutableLiveData<Boolean> isUpdating=new MutableLiveData<>();
+
 
 
 
@@ -45,10 +51,12 @@ public class NewsRepo {
     public MutableLiveData<List<NewsweatherModel>> getNewsWeather(){
         setNewsWeather();
         newsWeatherData=new MutableLiveData<>();
-        newsWeatherData=new MutableLiveData<>();
         newsWeatherData.setValue(newsWeather);
 
         return newsWeatherData;
+    }
+    public MutableLiveData<Boolean> getIsUpdating(){
+        return isUpdating;
     }
     FirebaseDataCallback dataCallback=new FirebaseDataCallback() {
         @Override
@@ -59,6 +67,7 @@ public class NewsRepo {
         }
     };
     private void setNewsWeather(){
+
         FirebaseDatabase.getInstance().getReference().child("Users").child(uId).child("News")
                 .addValueEventListener(new ValueEventListener() {
                     @Override
@@ -71,7 +80,7 @@ public class NewsRepo {
                                         ds.child("imageUrl").getValue(String.class),"News",ds.getKey()));
                             }
                         dataCallback.responseData(newsWeather);
-
+                        isUpdating.setValue(false);
                     }
 
                     @Override

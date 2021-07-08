@@ -65,7 +65,7 @@
         </RelativeLayout>
         <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:scrollbars="none">
             <LinearLayout
                 android:layout_width="match_parent"
@@ -80,12 +80,12 @@
                     style="@style/TextAppearance.AppCompat.Display1"
                     android:textStyle="bold"
                     android:textColor="@color/black"
-                    android:text="Mist"/>
+                    android:text="--"/>
                 <TextView
                     android:id="@+id/location"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Kolkata, West Bengol"
+                    android:text="----"
                     style="@style/TextAppearance.AppCompat.Body1"/>
                 <com.google.android.material.circularreveal.cardview.CircularRevealCardView
                     android:layout_width="match_parent"

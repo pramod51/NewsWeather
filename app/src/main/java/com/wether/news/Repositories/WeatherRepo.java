@@ -32,7 +32,7 @@ public class WeatherRepo {
     private static WeatherRepo instance;
     List<NewsweatherModel> newsWeather=new ArrayList<>();
     MutableLiveData<List<NewsweatherModel>> newsWeatherData;
-
+    MutableLiveData<Boolean> isUpdating=new MutableLiveData<>();
 
 
     public static WeatherRepo getInstance(){
@@ -48,6 +48,9 @@ public class WeatherRepo {
         newsWeatherData.setValue(newsWeather);
 
         return newsWeatherData;
+    }
+    public MutableLiveData<Boolean> getIsUpdating(){
+        return isUpdating;
     }
     FirebaseDataCallback dataCallback=new FirebaseDataCallback() {
         @Override
@@ -70,7 +73,7 @@ public class WeatherRepo {
                                         ds.child("imageUrl").getValue(String.class),"Weather", ds.getKey()));
                             }
                         dataCallback.responseData(newsWeather);
-
+                        isUpdating.setValue(false);
                     }
 
                     @Override

@@ -1,5 +1,6 @@
 package com.wether.news.Fragments;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
@@ -13,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.wether.news.R;
 import com.wether.news.WetherApi.Weather;
 import com.wether.news.WetherApi.WeatherJsonPlaceHolder;
@@ -31,12 +33,15 @@ public class WeatherFragment extends Fragment {
     TextView condition, location ,temperatureAndHumidity,airQuality,windAndCloud;
     private TextView prev,next,newsTopic;
     private int pos=0;
+    private ProgressDialog progressDialog;
+    private ArrayList<String> images = new ArrayList<>();
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view= inflater.inflate(R.layout.fragment_weather, container, false);
         ArrayList<String> topics=getArguments().getStringArrayList("key");
+        images=getArguments().getStringArrayList("urls");
         pos=getArguments().getInt("pos",0);
         initViews(view);
         getWeather(topics.get(pos));
@@ -75,6 +80,8 @@ public class WeatherFragment extends Fragment {
         newsTopic=view.findViewById(R.id.news_topic);
     }
     private void getWeather(String searchQuery){
+        Glide.with(getContext()).load(images.get(pos)).into(imageView);
+        showProgressDialog();
         newsTopic.setText(searchQuery);
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://api.weatherapi.com/")
@@ -86,6 +93,7 @@ public class WeatherFragment extends Fragment {
         weatherCall.enqueue(new Callback<Weather>() {
             @Override
             public void onResponse(Call<Weather> call, Response<Weather> response) {
+                hideProgressDialog();
                 if (!response.isSuccessful()){
                     Toast.makeText(getContext(),"Something went wrong",Toast.LENGTH_LONG).show();
                     return;
@@ -117,9 +125,19 @@ public class WeatherFragment extends Fragment {
 
             @Override
             public void onFailure(Call<Weather> call, Throwable t) {
+                hideProgressDialog();
                 Toast.makeText(getContext(),t.getMessage(),Toast.LENGTH_LONG).show();
                 Log.v("tag",t.getMessage());
             }
         });
+    }
+    private void showProgressDialog() {
+        progressDialog = new ProgressDialog(getContext());
+        progressDialog.setMessage("Please wait");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+    }
+    private void hideProgressDialog() {
+        progressDialog.dismiss();
     }
 }

@@ -31,6 +31,7 @@ public class NewsWeatherActivity extends AppCompatActivity {
         int pos=getIntent().getIntExtra("pos",0);
         Bundle bundle=new Bundle();
         bundle.putStringArrayList("key",topics);
+        bundle.putStringArrayList("urls",getIntent().getStringArrayListExtra("urls"));
         bundle.putInt("pos",pos);
         if (type.equals("News")){
             fragment=new NewsFragment();

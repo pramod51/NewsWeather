@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.text.format.DateFormat;
 import android.util.Log;
@@ -39,6 +40,7 @@ public class NewsFragment extends Fragment {
     private TextView prev,next,newsTopic;
     private int pos=0;
     private final String uId= FirebaseAuth.getInstance().getCurrentUser().getUid();
+    private ProgressDialog progressDialog;
 
     @Nullable
     @Override
@@ -88,6 +90,7 @@ public class NewsFragment extends Fragment {
 
     }
     private void getNewsContent(String searchQuery){
+        showProgressDialog();
         newsTopic.setText(searchQuery);
         newsModels.clear();
         Log.v("tag","enter");
@@ -101,6 +104,7 @@ public class NewsFragment extends Fragment {
         newsCall.enqueue(new Callback<News>() {
             @Override
             public void onResponse(Call<News> call, Response<News> response) {
+                hideProgressDialog();
                 if (!response.isSuccessful()){
                     Toast.makeText(getContext(),"Something went wrong",Toast.LENGTH_LONG).show();
                     return;
@@ -118,6 +122,7 @@ public class NewsFragment extends Fragment {
 
             @Override
             public void onFailure(Call<News> call, Throwable t) {
+                hideProgressDialog();
                 Toast.makeText(getContext(),t.getMessage(),Toast.LENGTH_LONG).show();
                 Log.v("tag",t.getMessage());
             }
@@ -127,5 +132,14 @@ public class NewsFragment extends Fragment {
 
         Date d = new Date();
         return DateFormat.format("yyyy-MM-dd", d.getTime()).toString();
+    }
+    private void showProgressDialog() {
+        progressDialog = new ProgressDialog(getContext());
+        progressDialog.setMessage("Please wait");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+    }
+    private void hideProgressDialog() {
+        progressDialog.dismiss();
     }
 }

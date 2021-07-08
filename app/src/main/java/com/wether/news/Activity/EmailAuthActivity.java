@@ -175,7 +175,7 @@ public class EmailAuthActivity extends AppCompatActivity {
         finish();
     }
     private void showProgressDialog() {
-        progressDialog=new ProgressDialog(getApplicationContext());
+        progressDialog=new ProgressDialog(this);
         progressDialog.setMessage("Please wait");
         progressDialog.setCancelable(false);
         progressDialog.show();

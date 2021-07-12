@@ -16,34 +16,36 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
-public class WeatherRepo {
+public class NewsTopicRepo {
 
 
     protected interface FirebaseCallback{
         String response(long timestamp);
     }
     protected interface FirebaseDataCallback{
-        Void responseData(List<NewsweatherModel> models);
+        void responseData(List<NewsweatherModel> models);
     }
 
-
-    private String uId= FirebaseAuth.getInstance().getCurrentUser().getUid();
-    private static WeatherRepo instance;
+    private final String uId= Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
+    private static NewsTopicRepo instance;
     List<NewsweatherModel> newsWeather=new ArrayList<>();
     MutableLiveData<List<NewsweatherModel>> newsWeatherData;
     MutableLiveData<Boolean> isUpdating=new MutableLiveData<>();
 
 
-    public static WeatherRepo getInstance(){
+
+
+    public static NewsTopicRepo getInstance(){
         if (instance==null){
-            instance=new WeatherRepo();
+            instance=new NewsTopicRepo();
         }
         return instance;
     }
 
     public MutableLiveData<List<NewsweatherModel>> getNewsWeather(){
-        setWeather();
+        setNewsWeather();
         newsWeatherData=new MutableLiveData<>();
         newsWeatherData.setValue(newsWeather);
 
@@ -54,23 +56,23 @@ public class WeatherRepo {
     }
     FirebaseDataCallback dataCallback=new FirebaseDataCallback() {
         @Override
-        public Void responseData(List<NewsweatherModel> models) {
+        public void responseData(List<NewsweatherModel> models) {
             newsWeatherData.setValue(models);
             Log.v("tag","size"+models.size());
-            return null;
+
         }
     };
-    private void setWeather(){
-        FirebaseDatabase.getInstance().getReference().child("Users").child(uId).child("Weather")
+    private void setNewsWeather(){
+        FirebaseDatabase.getInstance().getReference().child("Users").child(uId).child("News")
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         newsWeather.clear();
                         if (snapshot.exists())
                             for (DataSnapshot ds:snapshot.getChildren()){
-                                Log.v("tag","ago=="+callback.response((Long) ds.child("timeStamp").getValue()));
-                                newsWeather.add(new NewsweatherModel(ds.child("topic").getValue(String.class),callback.response((Long) ds.child("timeStamp").getValue()),
-                                        ds.child("imageUrl").getValue(String.class),"Weather", ds.getKey()));
+                                Log.v("tag", "ago==" + callback.response(Long.parseLong(""+ds.child("timeStamp").getValue(long.class))));
+                                newsWeather.add(new NewsweatherModel(ds.child("topic").getValue(String.class),callback.response(Long.parseLong(""+ds.child("timeStamp").getValue())),
+                                        ds.child("imageUrl").getValue(String.class),"News",ds.getKey()));
                             }
                         dataCallback.responseData(newsWeather);
                         isUpdating.setValue(false);
@@ -84,12 +86,8 @@ public class WeatherRepo {
 
     }
 
-    FirebaseCallback callback=new FirebaseCallback() {
-        @Override
-        public String response(long timestamp) {
-            return getTimeAgo(timestamp);
-        }
-    };
+    FirebaseCallback callback= NewsTopicRepo::getTimeAgo;
+
     public static String getTimeAgo(long time) {
         final int SECOND_MILLIS = 1000;
         final int MINUTE_MILLIS = 60 * SECOND_MILLIS;

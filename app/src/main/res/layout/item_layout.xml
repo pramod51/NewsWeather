@@ -30,7 +30,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:scaleType="centerCrop"
-                    android:src="@drawable/common_google_signin_btn_icon_dark"/>
+                    android:src="@drawable/common_google_signin_btn_icon_dark"
+                    android:contentDescription="@string/topic_or_place_image" />
             </com.google.android.material.circularreveal.cardview.CircularRevealCardView>
             <LinearLayout
                 android:layout_width="0dp"
@@ -49,14 +50,14 @@
                     android:textStyle="bold"
                     android:ellipsize="end"
                     android:maxLines="2"
-                    android:text="New Place "/>
+                    android:text="@string/new_place"/>
                 <TextView
                     android:id="@+id/last_seen"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     style="@style/TextAppearance.AppCompat.Body1"
                     android:textColor="@color/black"
-                    android:text="Last Seen"/>
+                    android:text="@string/last_seen"/>
 
 
             </LinearLayout>

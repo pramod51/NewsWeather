@@ -1,40 +1,32 @@
 package com.wether.news.Activity;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
-import com.google.firebase.auth.FirebaseAuthInvalidUserException;
-import com.google.firebase.auth.FirebaseAuthUserCollisionException;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.wether.news.R;
+import com.wether.news.ViewModels.LoginSignupViewModel;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Objects;
 
 public class EmailAuthActivity extends AppCompatActivity {
     private TextInputLayout emailInputLayout,passwordInputLayout;
     private TextInputEditText email,password;
     private MaterialButton signIn,signUp;
     private final FirebaseAuth mAuth=FirebaseAuth.getInstance();
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    //private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private ProgressDialog progressDialog;
+    private LoginSignupViewModel viewModel;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,34 +37,43 @@ public class EmailAuthActivity extends AppCompatActivity {
         }
         setContentView(R.layout.activity_email_auth);
         initViews();
-        signIn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (isValidCredentials()){
-                    if (signIn.getText().toString().equals("Sign In")){
-                        emailPasswordAuthSignIN(email.getText().toString(),password.getText().toString());
-                    }
-                    else{
-                        emailPasswordAuthSignUP(email.getText().toString(),password.getText().toString());
-                    }
-                }
 
+        Log.v("tag","onCreate");
+
+        viewModel = new ViewModelProvider(this).get(LoginSignupViewModel.class);
+        viewModel.onSuccess().observe(this, firebaseUser -> {
+            if (firebaseUser!=null) {
+                hideProgressDialog();
+                goInMainActivity();
             }
         });
-        signUp.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (signUp.getText().toString().equals("Sign Up")){
-                    signIn.setText("Sign UP");
-                    signUp.setText("Sign In");
-                }
-                else{
-                    signIn.setText("Sign In");
-                    signUp.setText("Sign Up");
+        viewModel.onFailure().observe(this, s -> {
+            if (progressDialog!=null){
+                Toast.makeText(EmailAuthActivity.this,s,Toast.LENGTH_LONG).show();
+                hideProgressDialog();
+            }
+        });
+        signIn.setOnClickListener(view -> {
+            if (isValidCredentials()){
+                showProgressDialog();
+                if (!signIn.getText().toString().equals("Sign In")) {
+                    viewModel.emailPasswordAuthSignUP(Objects.requireNonNull(email.getText()).toString(), Objects.requireNonNull(password.getText()).toString());
+                } else {
+                    viewModel.emailPasswordAuthSignIN(Objects.requireNonNull(email.getText()).toString(), Objects.requireNonNull(password.getText()).toString());
                 }
             }
         });
-
+        signUp.setOnClickListener(view -> {
+            if (signUp.getText().toString().equals("Sign Up")){
+                signIn.setText(R.string.sign_up);
+                signUp.setText(R.string.sign_in);
+            }
+            else{
+                signIn.setText(R.string.sign_in);
+                signUp.setText(R.string.sign_up);
+            }
+        });
+        Log.v("tag","hjhfhkj");
 
 
     }
@@ -89,86 +90,24 @@ public class EmailAuthActivity extends AppCompatActivity {
     private boolean isValidCredentials(){
         emailInputLayout.setError(null);
         password.setError(null);
-        if (email.getText().toString().isEmpty()){
+        if (Objects.requireNonNull(email.getText()).toString().isEmpty()){
             emailInputLayout.setError("Email can't be empty");
             return false;
         }
-        else if (password.getText().toString().isEmpty()){
+        else if (Objects.requireNonNull(password.getText()).toString().isEmpty()){
             passwordInputLayout.setError("Password can't be empty");
             return false;
         }
-        else if (password.getText().toString().length()<6){
+        else {
+            if (password.getText().toString().length() >= 6) {
+                return true;
+            }
             passwordInputLayout.setError("minimum password length should be 6");
             return false;
         }
 
-        return true;
     }
 
-    private void emailPasswordAuthSignUP(String email,String password){
-        showProgressDialog();
-        mAuth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            Log.d("tag", "createUserWithEmail:success");
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            Map<String, String> map=new HashMap<>();
-                            map.put("email",email);
-                            map.put("pass",password);
-                            db.collection("Users").document(mAuth.getCurrentUser().getUid())
-                                    .set(map).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void unused) {
-                                    goInMainActivity();
-                                }
-                            });
-
-                        }else if(task.getException() instanceof FirebaseAuthUserCollisionException) {
-                            emailInputLayout.setError("Email Already Used");
-                        }
-                        else {
-                            // If sign in fails, display a message to the user.
-                            Log.w("tag", "createUserWithEmail:failure", task.getException());
-                            Toast.makeText(EmailAuthActivity.this, "Authentication failed.",
-                                    Toast.LENGTH_LONG).show();
-
-                        }
-                        hideProgressDialog();
-                    }
-                });
-    }
-
-    private void emailPasswordAuthSignIN(String email,String password){
-        showProgressDialog();
-        mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            Log.d("tag", "signInWithEmail:success");
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            goInMainActivity();
-
-                        } else if(task.getException() instanceof FirebaseAuthInvalidCredentialsException){
-                            //invalid pass
-                            passwordInputLayout.setError("Wrong password entered");
-                        }
-                        else if(task.getException() instanceof FirebaseAuthInvalidUserException){
-                            //Email not in used
-                            emailInputLayout.setError("Wrong Email entered");
-
-                        }
-                        else {
-                            Toast.makeText(EmailAuthActivity.this,"Authentication failed",Toast.LENGTH_LONG).show();
-                        }
-                        hideProgressDialog();
-                    }
-                });
-    }
 
     private void goInMainActivity(){
         startActivity(new Intent(EmailAuthActivity.this,MainActivity.class));

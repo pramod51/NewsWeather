@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -8,7 +7,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        tools:ignore="UselessParent">
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_margin="8dp"
@@ -17,7 +17,7 @@
                 android:id="@+id/news_topic"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="News Topic"
+                android:text="@string/news_topic"
                 style="@style/TextAppearance.AppCompat.Medium"
                 android:background="@drawable/news_topic_back"
                 android:textColor="@color/black"
@@ -32,12 +32,13 @@
                 android:layout_centerVertical="true"
                 android:background="@drawable/prev_next_back"
                 android:orientation="horizontal"
-                android:layout_alignParentRight="true">
+                android:layout_alignParentRight="true"
+                tools:ignore="RelativeOverlap">
                 <TextView
                     android:id="@+id/prev"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Prev"
+                    android:text="@string/prev"
                     android:paddingTop="8dp"
                     android:paddingBottom="8dp"
                     android:background="?selectableItemBackground"
@@ -53,7 +54,7 @@
                     android:id="@+id/next"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Next"
+                    android:text="@string/next"
                     style="@style/TextAppearance.AppCompat.Body1"
                     android:textColor="@color/black"
                     android:background="?selectableItemBackground"

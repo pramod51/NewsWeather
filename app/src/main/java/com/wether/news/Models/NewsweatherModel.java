@@ -1,7 +1,11 @@
 package com.wether.news.Models;
 
 public class NewsweatherModel {
-    private String title,lastSeen,imageUrl,type,key;
+    private String title;
+    private final String lastSeen;
+    private final String imageUrl;
+    private String type;
+    private final String key;
 
     public NewsweatherModel(String title, String lastSeen, String imageUrl, String type, String key) {
         this.title = title;
@@ -15,9 +19,6 @@ public class NewsweatherModel {
         return key;
     }
 
-    public void setKey(String key) {
-        this.key = key;
-    }
 
     public String getType() {
         return type;
@@ -31,9 +32,6 @@ public class NewsweatherModel {
         return imageUrl;
     }
 
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
 
     public String getTitle() {
         return title;
@@ -47,7 +45,4 @@ public class NewsweatherModel {
         return lastSeen;
     }
 
-    public void setLastSeen(String lastSeen) {
-        this.lastSeen = lastSeen;
-    }
 }

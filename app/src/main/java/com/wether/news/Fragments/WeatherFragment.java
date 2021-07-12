@@ -1,10 +1,12 @@
 package com.wether.news.Fragments;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,18 +18,10 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.wether.news.R;
-import com.wether.news.WetherApi.Weather;
-import com.wether.news.WetherApi.WeatherJsonPlaceHolder;
-
+import com.wether.news.ViewModels.WeatherViewModel;
 import java.util.ArrayList;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
-
 public class WeatherFragment extends Fragment {
+
 
     ImageView imageView;
     TextView condition, location ,temperatureAndHumidity,airQuality,windAndCloud;
@@ -35,36 +29,79 @@ public class WeatherFragment extends Fragment {
     private int pos=0;
     private ProgressDialog progressDialog;
     private ArrayList<String> images = new ArrayList<>();
+    private WeatherViewModel viewModel;
+    private ArrayList<String> place;
+    private Context context;
+    @SuppressLint("SetTextI18n")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view= inflater.inflate(R.layout.fragment_weather, container, false);
-        ArrayList<String> topics=getArguments().getStringArrayList("key");
+        assert getArguments() != null;
+        place=getArguments().getStringArrayList("key");
         images=getArguments().getStringArrayList("urls");
         pos=getArguments().getInt("pos",0);
+
         initViews(view);
-        getWeather(topics.get(pos));
-        prev.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (pos>0){
-                    pos--;
-                    getWeather(topics.get(pos));
-                }
-            }
-        });
-        next.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (pos<topics.size()){
-                    pos++;
-                    getWeather(topics.get(pos));
-                }
-            }
+        context=getContext();
+        viewModel=new ViewModelProvider(requireActivity()).get(WeatherViewModel.class);
+        if (viewModel.getPosition().getValue()!=null)
+            pos=viewModel.getPosition().getValue();
+        viewModel.getWeather(place.get(pos), pos).observe(getViewLifecycleOwner(),weather -> {
+            if (weather==null)
+                return;
+            Glide.with(context).load(images.get(pos)).into(imageView);
+            condition.setText(weather.getCurrent().getCondition().getText());
+            location.setText(weather.getLocation().getName()+", "+weather.getLocation().getRegion());
+            windAndCloud.setText(weather.getCurrent().getWindKph()+"KPH And "+weather.getCurrent().getCloud());
+
+            temperatureAndHumidity.setText(weather.getCurrent().getTempC()+"C And "+weather.getCurrent().getHumidity());
+
+            airQuality.setText("CO "+weather.getCurrent().getAirQuality().getCo()+
+                    "\nNO2 "+weather.getCurrent().getAirQuality().getNo2()+
+                    "\nO3 "+weather.getCurrent().getAirQuality().getO3()+
+                    "\nSO2 "+weather.getCurrent().getAirQuality().getSo2()+
+                    "\npm2_5 "+weather.getCurrent().getAirQuality().getPm25()+
+                    "\npm10 "+weather.getCurrent().getAirQuality().getPm10()+
+                    "\nus-epa-index "+weather.getCurrent().getAirQuality().getUsEpaIndex()+
+                    "\ngb-defra-index "+weather.getCurrent().getAirQuality().getGbDefraIndex());
+
+            hideProgressDialog();
+
         });
 
+        viewModel.onFailureData().observe(getViewLifecycleOwner(),error->{
+            if (error!=null)
+                Toast.makeText(getContext(),error,Toast.LENGTH_LONG).show();
+        });
+        viewModel.isLoading().observe(getViewLifecycleOwner(),isLoading->{
+            if (isLoading)
+                showProgressDialog();
+            else
+                hideProgressDialog();
+        });
+        viewModel.getPosition().observe(getViewLifecycleOwner(),pos-> newsTopic.setText(place.get(pos)));
+        Log.v("tag","onCreate Called");
 
+
+        prev.setOnClickListener(view1 -> {
+            if (pos>0){
+                pos--;
+                newsTopic.setText(place.get(pos));
+                viewModel.setPosition(pos);
+                viewModel.getWeather(place.get(pos),pos );
+
+            }
+        });
+        next.setOnClickListener(view1 -> {
+            if (pos<place.size()-1){
+                pos++;
+                newsTopic.setText(place.get(pos));
+                viewModel.setPosition(pos);
+                viewModel.getWeather(place.get(pos),pos );
+            }
+        });
 
         return view;
     }
@@ -79,58 +116,8 @@ public class WeatherFragment extends Fragment {
         next=view.findViewById(R.id.next);
         newsTopic=view.findViewById(R.id.news_topic);
     }
-    private void getWeather(String searchQuery){
-        Glide.with(getContext()).load(images.get(pos)).into(imageView);
-        showProgressDialog();
-        newsTopic.setText(searchQuery);
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://api.weatherapi.com/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        WeatherJsonPlaceHolder jsonPlaceHolder = retrofit.create(WeatherJsonPlaceHolder.class);
-
-        Call<Weather> weatherCall=jsonPlaceHolder.getWeather("31190e610bb04c82b42123859210707",searchQuery,"yes");
-        weatherCall.enqueue(new Callback<Weather>() {
-            @Override
-            public void onResponse(Call<Weather> call, Response<Weather> response) {
-                hideProgressDialog();
-                if (!response.isSuccessful()){
-                    Toast.makeText(getContext(),"Something went wrong",Toast.LENGTH_LONG).show();
-                    return;
-                }
-                Log.v("tag","entered");
-                Weather weather=response.body();
-                if (weather==null)
-                    return;
-                condition.setText(weather.getCurrent().getCondition().getText());
-                location.setText(weather.getLocation().getName()+", "+weather.getLocation().getRegion());
-                windAndCloud.setText(weather.getCurrent().getWindKph()+"KPH And "+weather.getCurrent().getCloud());
-
-                temperatureAndHumidity.setText(weather.getCurrent().getTempC()+"C And "+weather.getCurrent().getHumidity());
-
-                airQuality.setText("CO "+weather.getCurrent().getAirQuality().getCo()+
-                                    "\nNO2 "+weather.getCurrent().getAirQuality().getNo2()+
-                                        "\nO3 "+weather.getCurrent().getAirQuality().getO3()+
-                                        "\nSO2 "+weather.getCurrent().getAirQuality().getSo2()+
-                                        "\npm2_5 "+weather.getCurrent().getAirQuality().getPm25()+
-                                        "\npm10 "+weather.getCurrent().getAirQuality().getPm10()+
-                                        "\nus-epa-index "+weather.getCurrent().getAirQuality().getUsEpaIndex()+
-                                        "\ngb-defra-index "+weather.getCurrent().getAirQuality().getGbDefraIndex());
 
 
-
-
-
-            }
-
-            @Override
-            public void onFailure(Call<Weather> call, Throwable t) {
-                hideProgressDialog();
-                Toast.makeText(getContext(),t.getMessage(),Toast.LENGTH_LONG).show();
-                Log.v("tag",t.getMessage());
-            }
-        });
-    }
     private void showProgressDialog() {
         progressDialog = new ProgressDialog(getContext());
         progressDialog.setMessage("Please wait");
@@ -138,6 +125,8 @@ public class WeatherFragment extends Fragment {
         progressDialog.show();
     }
     private void hideProgressDialog() {
+        if (progressDialog!=null)
         progressDialog.dismiss();
     }
+
 }

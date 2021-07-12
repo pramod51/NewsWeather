@@ -4,20 +4,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import android.os.Bundle;
-
+import android.util.Log;
 import com.wether.news.Fragments.NewsFragment;
 import com.wether.news.Fragments.WeatherFragment;
 import com.wether.news.R;
-import com.wether.news.WetherApi.Weather;
-import com.wether.news.WetherApi.WeatherJsonPlaceHolder;
 
 import java.util.ArrayList;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class NewsWeatherActivity extends AppCompatActivity {
 
@@ -25,17 +18,22 @@ public class NewsWeatherActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_news_weather);
+        //ActivityViewModel viewModel= new ViewModelProvider(this).get(ActivityViewModel.class);
+
+
+        Log.v("tag","Activity oncre"+this);
+
         String type=getIntent().getStringExtra("type");
-        Fragment fragment = null;
+        Fragment fragment;
         ArrayList<String> topics=getIntent().getStringArrayListExtra("key");
         int pos=getIntent().getIntExtra("pos",0);
         Bundle bundle=new Bundle();
         bundle.putStringArrayList("key",topics);
         bundle.putStringArrayList("urls",getIntent().getStringArrayListExtra("urls"));
         bundle.putInt("pos",pos);
+
         if (type.equals("News")){
             fragment=new NewsFragment();
-
         }else {
             fragment=new WeatherFragment();
 

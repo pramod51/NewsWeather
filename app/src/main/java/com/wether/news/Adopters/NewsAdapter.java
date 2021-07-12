@@ -14,21 +14,24 @@ import com.bumptech.glide.Glide;
 import com.wether.news.Models.NewsModel;
 import com.wether.news.R;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.ViewHolder> {
-    ArrayList<NewsModel> newsModels;
+    List<NewsModel> newsModels;
     Context context;
 
-    public NewsAdapter(ArrayList<NewsModel> newsModels, Context context) {
+    public NewsAdapter(List<NewsModel> newsModels, Context context) {
         this.newsModels = newsModels;
         this.context = context;
     }
-
+    public void setNewsModels(List<NewsModel> newsModels){
+        this.newsModels=newsModels;
+        notifyDataSetChanged();
+    }
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.news_item,parent,false));
+        return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.news_item, parent, false));
     }
 
     @Override
@@ -44,10 +47,13 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.ViewHolder> {
 
     @Override
     public int getItemCount() {
-        return newsModels.size();
+    if (newsModels!=null)
+        return this.newsModels.size();
+    else
+        return 0;
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;
         TextView title,description,publishedAt,source;
         public ViewHolder(@NonNull View itemView) {

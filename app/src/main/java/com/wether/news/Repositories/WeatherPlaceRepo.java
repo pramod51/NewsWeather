@@ -1,7 +1,5 @@
 package com.wether.news.Repositories;
 
-import android.app.ProgressDialog;
-import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -18,38 +16,36 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
-public class NewsRepo {
+public class WeatherPlaceRepo {
 
 
     protected interface FirebaseCallback{
         String response(long timestamp);
     }
     protected interface FirebaseDataCallback{
-        Void responseData(List<NewsweatherModel> models);
+        void responseData(List<NewsweatherModel> models);
     }
 
 
 
-    private String uId= FirebaseAuth.getInstance().getCurrentUser().getUid();
-    private static NewsRepo instance;
+    private final String uId= Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
+    private static WeatherPlaceRepo instance;
     List<NewsweatherModel> newsWeather=new ArrayList<>();
     MutableLiveData<List<NewsweatherModel>> newsWeatherData;
-    ProgressDialog progressDialog;
     MutableLiveData<Boolean> isUpdating=new MutableLiveData<>();
 
 
-
-
-    public static NewsRepo getInstance(){
+    public static WeatherPlaceRepo getInstance(){
         if (instance==null){
-            instance=new NewsRepo();
+            instance=new WeatherPlaceRepo();
         }
         return instance;
     }
 
     public MutableLiveData<List<NewsweatherModel>> getNewsWeather(){
-        setNewsWeather();
+        setWeather();
         newsWeatherData=new MutableLiveData<>();
         newsWeatherData.setValue(newsWeather);
 
@@ -60,24 +56,23 @@ public class NewsRepo {
     }
     FirebaseDataCallback dataCallback=new FirebaseDataCallback() {
         @Override
-        public Void responseData(List<NewsweatherModel> models) {
+        public void responseData(List<NewsweatherModel> models) {
             newsWeatherData.setValue(models);
             Log.v("tag","size"+models.size());
-            return null;
+
         }
     };
-    private void setNewsWeather(){
-
-        FirebaseDatabase.getInstance().getReference().child("Users").child(uId).child("News")
+    private void setWeather(){
+        FirebaseDatabase.getInstance().getReference().child("Users").child(uId).child("Weather")
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         newsWeather.clear();
                         if (snapshot.exists())
                             for (DataSnapshot ds:snapshot.getChildren()){
-                                Log.v("tag","ago=="+callback.response((Long) ds.child("timeStamp").getValue()));
-                                newsWeather.add(new NewsweatherModel(ds.child("topic").getValue(String.class),callback.response((Long) ds.child("timeStamp").getValue()),
-                                        ds.child("imageUrl").getValue(String.class),"News",ds.getKey()));
+
+                                newsWeather.add(new NewsweatherModel(ds.child("topic").getValue(String.class),callback.response(Long.parseLong(""+ds.child("timeStamp").getValue())),
+                                        ds.child("imageUrl").getValue(String.class),"Weather", ds.getKey()));
                             }
                         dataCallback.responseData(newsWeather);
                         isUpdating.setValue(false);
@@ -91,12 +86,7 @@ public class NewsRepo {
 
     }
 
-    FirebaseCallback callback=new FirebaseCallback() {
-        @Override
-        public String response(long timestamp) {
-            return getTimeAgo(timestamp);
-        }
-    };
+    FirebaseCallback callback= WeatherPlaceRepo::getTimeAgo;
     public static String getTimeAgo(long time) {
         final int SECOND_MILLIS = 1000;
         final int MINUTE_MILLIS = 60 * SECOND_MILLIS;
@@ -135,6 +125,7 @@ public class NewsRepo {
         Calendar calendar = Calendar.getInstance();
         return calendar.getTime();
     }
+
 
 
 }

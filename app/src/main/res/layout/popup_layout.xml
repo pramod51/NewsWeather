@@ -9,12 +9,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
-        android:hint="Enter Place"
+        android:hint="@string/enter_place"
         style="@style/TextAppearance.AppCompat.Medium"/>
     <com.google.android.material.button.MaterialButton
         android:layout_below="@+id/add"
         android:id="@+id/add_item"
-        android:text="Add"
+        android:text="@string/add"
         android:textColor="?attr/colorPrimary"
         android:layout_width="150dp"
         android:layout_height="wrap_content"

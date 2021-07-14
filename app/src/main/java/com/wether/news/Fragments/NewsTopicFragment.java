@@ -4,10 +4,10 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,11 +15,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 
-import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.wether.news.Adopters.NewsWeatherAdapter;
+import com.wether.news.Constants;
 import com.wether.news.R;
 import com.wether.news.ViewModels.NewsWeatherViewModel;
+import com.wether.news.databinding.FragmentNewsTopicWeatherPlaceBinding;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -29,34 +30,34 @@ import java.util.Objects;
 public class NewsTopicFragment extends Fragment  {
 
     private NewsWeatherAdapter adapter;
-    private ExtendedFloatingActionButton addNew;
-    //private final String uId= Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
     private NewsWeatherViewModel viewModel;
     private ProgressDialog progressDialog;
+    private FragmentNewsTopicWeatherPlaceBinding newsTopicWeatherPlaceBinding;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view= inflater.inflate(R.layout.fragment_news_topic_weather_place, container, false);
+        newsTopicWeatherPlaceBinding=FragmentNewsTopicWeatherPlaceBinding.inflate(inflater,container,false);
+        View view= newsTopicWeatherPlaceBinding.getRoot();
 
         viewModel = new ViewModelProvider(requireActivity()).get(NewsWeatherViewModel.class);
-        showProgressDialog();
-        viewModel.init();
-        viewModel.getNewsWeather().observe(getViewLifecycleOwner(), newsweatherModels -> {
-            if (adapter!=null)
-            adapter.notifyDataSetChanged();
+        viewModel.initNewsTopics();
+        init();
+        viewModel.getNewsWeather().observe(getViewLifecycleOwner(), newsWeatherModels -> {
+            if (newsWeatherModels!=null){
+                adapter.setNewsWeatherChanges(newsWeatherModels);
+            }
+            Log.v(NewsTopicFragment.class.getName(),"NewsTopics Observed");
         });
+
         viewModel.getIsUpdating().observe(getViewLifecycleOwner(), aBoolean -> {
             if (aBoolean)
                 showProgressDialog();
             else
-            hideProgressDialog();
+                hideProgressDialog();
         });
-        initViews(view);
-        addNew.setOnClickListener(view1 -> openDialog());
-
-
+        newsTopicWeatherPlaceBinding.addNew.setOnClickListener(view1 -> openDialog());
 
 
         return view;
@@ -69,44 +70,34 @@ public class NewsTopicFragment extends Fragment  {
         dialog.setCancelable(false);
         dialog.setContentView(R.layout.popup_layout);
         TextInputEditText topic=dialog.findViewById(R.id.add);
-        topic.setHint("Enter Topic");
+        topic.setHint(R.string.enter_topic);
         dialog.show();
         dialog.findViewById(R.id.add_item).setOnClickListener(view -> {
 
             Date d = new Date();
             Map<String, Object> map=new HashMap<>();
-            map.put("topic", Objects.requireNonNull(topic.getText()).toString());
-            map.put("timeStamp",d.getTime());
-            //FirebaseDatabase.getInstance().getReference().child("Users").child(uId).child("News").push().setValue(map);
+            map.put(Constants.TOPICS, Objects.requireNonNull(topic.getText()).toString());
+            map.put(Constants.TIME_STAMP,d.getTime());
             viewModel.getImages(Objects.requireNonNull(topic.getText()).toString().replace(" ","+"),map,"News");
-            Log.v("tag",topic.getText().toString());
             dialog.dismiss();
         });
     }
 
+    private void init() {
 
-
-
-    private void initViews(View view) {
-        RecyclerView recyclerView = view.findViewById(R.id.recycler_view);
-        addNew=view.findViewById(R.id.add_new);
-
-
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-//        List<NewsweatherModel> newsWeatherModels = new ArrayList<>();
-        //adapter=new NewsWeatherAdapter(newsWeatherModels,getContext());
+        newsTopicWeatherPlaceBinding.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter=new NewsWeatherAdapter(viewModel.getNewsWeather().getValue(),getContext());
-        recyclerView.setAdapter(adapter);
-
+        newsTopicWeatherPlaceBinding.recyclerView.setAdapter(adapter);
 
     }
     private void showProgressDialog() {
         progressDialog = new ProgressDialog(getContext());
-        progressDialog.setMessage("Please wait");
+        progressDialog.setMessage(getString(R.string.please_wait));
         progressDialog.setCancelable(false);
         progressDialog.show();
     }
     private void hideProgressDialog() {
+        if (progressDialog!=null)
         progressDialog.dismiss();
     }
 

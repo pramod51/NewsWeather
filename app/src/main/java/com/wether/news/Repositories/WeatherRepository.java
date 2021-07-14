@@ -5,12 +5,11 @@ import android.util.Log;
 
 import com.wether.news.WetherApi.Weather;
 import com.wether.news.WetherApi.WeatherJsonPlaceHolder;
+import com.wether.news.WetherApi.WeatherRetroInstance;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class WeatherRepository {
     public interface GetWeatherData{
@@ -21,13 +20,10 @@ public class WeatherRepository {
 
 
     public void getWeatherData(String searchQuery,GetWeatherData getWeatherData){
-        Log.v("tag","getting data");
+        Log.v(WeatherRepository.class.getSimpleName(),"getting data");
         getWeatherData.isLoading(true);
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://api.weatherapi.com/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        WeatherJsonPlaceHolder jsonPlaceHolder = retrofit.create(WeatherJsonPlaceHolder.class);
+
+        WeatherJsonPlaceHolder jsonPlaceHolder = WeatherRetroInstance.getRetrofitClient().create(WeatherJsonPlaceHolder.class);
 
         Call<Weather> weatherCall=jsonPlaceHolder.getWeather("31190e610bb04c82b42123859210707",searchQuery,"yes");
         weatherCall.enqueue(new Callback<Weather>() {
@@ -39,7 +35,6 @@ public class WeatherRepository {
                     getWeatherData.onFailure("Something went wrong");
                     return;
                 }
-                Log.v("tag","entered");
                 Weather weather=response.body();
                 if (weather==null) {
                     getWeatherData.onResponse(null);
@@ -54,7 +49,7 @@ public class WeatherRepository {
             public void onFailure(Call<Weather> call, Throwable t) {
                 getWeatherData.onFailure(t.getMessage());
                 getWeatherData.isLoading(false);
-                Log.v("tag",t.getMessage());
+                Log.e(WeatherRepository.class.getSimpleName(),t.getMessage());
             }
         });
     }

@@ -5,11 +5,12 @@ import androidx.fragment.app.Fragment;
 
 import android.os.Bundle;
 import android.util.Log;
+
+import com.wether.news.Constants;
 import com.wether.news.Fragments.NewsFragment;
 import com.wether.news.Fragments.WeatherFragment;
 import com.wether.news.R;
-
-import java.util.ArrayList;
+import com.wether.news.databinding.ActivityNewsWeatherBinding;
 
 
 public class NewsWeatherActivity extends AppCompatActivity {
@@ -17,22 +18,19 @@ public class NewsWeatherActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_news_weather);
-        //ActivityViewModel viewModel= new ViewModelProvider(this).get(ActivityViewModel.class);
+        setContentView(ActivityNewsWeatherBinding.inflate(getLayoutInflater()).getRoot());
 
 
-        Log.v("tag","Activity oncre"+this);
+        Log.v(NewsWeatherActivity.class.getSimpleName(),"Activity Created");
 
-        String type=getIntent().getStringExtra("type");
+        String type=getIntent().getStringExtra(Constants.TYPE);
         Fragment fragment;
-        ArrayList<String> topics=getIntent().getStringArrayListExtra("key");
-        int pos=getIntent().getIntExtra("pos",0);
         Bundle bundle=new Bundle();
-        bundle.putStringArrayList("key",topics);
-        bundle.putStringArrayList("urls",getIntent().getStringArrayListExtra("urls"));
-        bundle.putInt("pos",pos);
+        bundle.putStringArrayList(Constants.TOPICS,getIntent().getStringArrayListExtra(Constants.TOPICS));
+        bundle.putStringArrayList(Constants.IMAGE_URLS,getIntent().getStringArrayListExtra(Constants.IMAGE_URLS));
+        bundle.putInt(Constants.POSITION,getIntent().getIntExtra(Constants.POSITION,0));
 
-        if (type.equals("News")){
+        if (type.equals(getString(R.string.news))){
             fragment=new NewsFragment();
         }else {
             fragment=new WeatherFragment();

@@ -10,64 +10,74 @@ import com.wether.news.Repositories.WeatherRepository;
 import com.wether.news.WetherApi.Weather;
 
 
-public class WeatherViewModel extends ViewModel implements WeatherRepository.GetWeatherData {
+public class WeatherViewModel extends ViewModel {
 
-    private MutableLiveData<Weather> mutableLiveData;
-    private final MutableLiveData<String> failedLiveData =new MutableLiveData<>();
-    private MutableLiveData<Boolean> isLoadingMutableLiveData;
-    private MutableLiveData<Integer> posMutableLd;
+    private MutableLiveData<Weather> weatherMutableLD;
+    private MutableLiveData<String> failedMutableLD;
+    private MutableLiveData<Boolean> isLoadingMutableLData;
+    private MutableLiveData<Integer> positionMutableLd;
     private WeatherRepository weatherRepository;
 
-    public LiveData<Weather> getWeather(String search,int pos){
-
-        if (mutableLiveData==null) {
-            mutableLiveData=new MutableLiveData<>();
-            weatherRepository=new WeatherRepository();
-            weatherRepository.getWeatherData(search,this);
-
-        }
-        if (getPosition().getValue()!=null&&getPosition().getValue() != pos) {
-            weatherRepository.getWeatherData(search,this);
-            Log.v("tag","position=="+pos+"pos=="+getPosition().getValue());
+    public LiveData<Weather> getWeather(String search){
+        if (weatherMutableLD==null) {
+            init();
+            isLoadingMutableLData.postValue(true);
+            weatherRepository.getWeatherData(search,getWeatherData);
         }
 
-        return mutableLiveData;
+        return weatherMutableLD;
     }
+    public void nextPrevWeatherUpdate(String search){
+        init();
+        isLoadingMutableLData.postValue(true);
+        weatherRepository.getWeatherData(search,getWeatherData);
+    }
+    private void init(){
+        if (weatherMutableLD==null)
+            weatherMutableLD=new MutableLiveData<>();
+        if (weatherRepository==null)
+            weatherRepository=new WeatherRepository();
+        if (isLoadingMutableLData==null)
+            isLoadingMutableLData=new MutableLiveData<>();
+        if (failedMutableLD==null)
+            failedMutableLD=new MutableLiveData<>();
+    }
+
     public LiveData<String> onFailureData(){
-        return failedLiveData;
+        return failedMutableLD;
     }
     public LiveData<Boolean> isLoading(){
-        return isLoadingMutableLiveData;
+        return isLoadingMutableLData;
     }
     public LiveData<Integer> getPosition(){
-        if (posMutableLd==null)
-            posMutableLd=new MutableLiveData<>();
-        return posMutableLd;
+        if (positionMutableLd==null)
+            positionMutableLd=new MutableLiveData<>();
+        return positionMutableLd;
     }
 
     public void setPosition(int position){
-        if (posMutableLd==null)
-            posMutableLd=new MutableLiveData<>();
-        posMutableLd.postValue(position);
+        positionMutableLd.postValue(position);
     }
 
-    @Override
-    public void onResponse(Weather weather) {
-        mutableLiveData.postValue(weather);
-        failedLiveData.postValue(null);
-    }
 
-    @Override
-    public void onFailure(String error) {
-        mutableLiveData.postValue(null);
-        failedLiveData.postValue(error);
-    }
+    WeatherRepository.GetWeatherData getWeatherData=new WeatherRepository.GetWeatherData() {
+        @Override
+        public void onResponse(Weather weather) {
+            weatherMutableLD.postValue(weather);
+            failedMutableLD.postValue(null);
+        }
 
-    @Override
-    public void isLoading(Boolean isLoading) {
-        if (isLoadingMutableLiveData==null)
-            isLoadingMutableLiveData=new MutableLiveData<>();
-        isLoadingMutableLiveData.postValue(isLoading);
-    }
+        @Override
+        public void onFailure(String error) {
+            weatherMutableLD.postValue(null);
+            failedMutableLD.postValue(error);
+        }
 
+        @Override
+        public void isLoading(Boolean isLoading) {
+            if (isLoadingMutableLData==null)
+                isLoadingMutableLData=new MutableLiveData<>();
+            isLoadingMutableLData.postValue(isLoading);
+        }
+    };
 }

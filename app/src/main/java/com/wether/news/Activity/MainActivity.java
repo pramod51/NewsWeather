@@ -7,21 +7,20 @@ import androidx.navigation.ui.NavigationUI;
 
 import android.os.Bundle;
 import android.util.Log;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.wether.news.R;
+import com.wether.news.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity {
 
-    private BottomNavigationView bottomNavigationView;
-    //private AppBarConfiguration appBarConfiguration;
 
+    ActivityMainBinding activityMainBinding;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        initViews();
+        activityMainBinding= ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(activityMainBinding.getRoot());
         setUpNavigation();
-        Log.v("tag","mainActivity");
+        Log.v(MainActivity.class.getSimpleName(),"MainActivity Created");
 
 
     }
@@ -30,16 +29,13 @@ public class MainActivity extends AppCompatActivity {
         assert navHostFragment != null;
         NavController navController = navHostFragment.getNavController();
         //appBarConfiguration = new AppBarConfiguration.Builder(R.id.libraryFragment, R.id.readingFragment).build();
-        NavigationUI.setupWithNavController(bottomNavigationView, navController);
+        NavigationUI.setupWithNavController(activityMainBinding.bottomNavView, navController);
         //NavigationUI.setupActionBarWithNavController(this,navController,appBarConfiguration);
 
 
     }
 
 
-    private void initViews() {
-        bottomNavigationView=findViewById(R.id.bottom_nav_view);
-    }
 
     /*@Override
     public boolean onSupportNavigateUp() {
@@ -48,3 +44,16 @@ public class MainActivity extends AppCompatActivity {
                 || super.onSupportNavigateUp();
     }*/
 }
+/*
+* call Network in Repo only
+* small firebase-
+* Tag mess-
+* Consts class
+* static method
+* varible name read
+* Ratrofit genral
+* Live data kewl viewModel
+* enum use use
+* ViewBinding
+*
+* */

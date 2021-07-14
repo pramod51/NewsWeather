@@ -5,26 +5,25 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 import com.wether.news.Adopters.NewsAdapter;
+import com.wether.news.Constants;
 import com.wether.news.R;
 import com.wether.news.ViewModels.NewsViewModel;
+import com.wether.news.databinding.FragmentNewsBinding;
+
 import java.util.ArrayList;
 
 public class NewsFragment extends Fragment {
-    private RecyclerView recyclerView;
+
     private NewsAdapter adapter;
-    //private List<NewsModel> newsModels;
-    private TextView prev,next,newsTopic;
-    private static int pos=0;
+    private static int position=0;
     private ProgressDialog progressDialog;
     private NewsViewModel viewModel;
 
@@ -32,25 +31,32 @@ public class NewsFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view= inflater.inflate(R.layout.fragment_news, container, false);
-        initViews(view);
+
+        FragmentNewsBinding newsBinding=FragmentNewsBinding.inflate(inflater,container,false);
+        View view= newsBinding.getRoot();
+
+        newsBinding.recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         assert getArguments() != null;
-        ArrayList<String> topics=getArguments().getStringArrayList("key");
-        pos=getArguments().getInt("pos",0);
-        newsTopic.setText(topics.get(pos));
+        ArrayList<String> topics=getArguments().getStringArrayList(Constants.TOPICS);
+        position=getArguments().getInt(Constants.POSITION,0);
+
+        newsBinding.newsTopic.setText(topics.get(position));
         viewModel = new ViewModelProvider(requireActivity()).get(NewsViewModel.class);
 
+        if (viewModel.getPosition().getValue()==null)
+            viewModel.setPosition(position);
 
-        viewModel.getNewsModels(topics.get(pos),0).observe(getViewLifecycleOwner(),newsModels -> {
-            Log.v("tag","Changes Observed");
+        viewModel.getPosition().observe(getViewLifecycleOwner(),position-> newsBinding.newsTopic.setText(topics.get(position)));
+
+        viewModel.getNewsModels(topics.get(position)).observe(getViewLifecycleOwner(),newsModels -> {
+            Log.v(NewsFragment.class.getSimpleName(),"Changes Observed");
             if (newsModels!=null){
                 adapter.setNewsModels(newsModels);
-                adapter.notifyDataSetChanged();
+                Log.v(NewsFragment.class.getSimpleName(),"Data set to News Model class");
             }
-            //Log.v("tag",newsModels.get(0).getDescription());
         });
-        adapter=new NewsAdapter(viewModel.getNewsModels(topics.get(pos),0).getValue(),getContext());
-        recyclerView.setAdapter(adapter);
+        adapter=new NewsAdapter(viewModel.getNewsModels(topics.get(position)).getValue(),getContext());
+        newsBinding.recyclerView.setAdapter(adapter);
         viewModel.isLoading().observe(getViewLifecycleOwner(),isLoading->{
             if (isLoading)
                 showProgressDialog();
@@ -64,19 +70,18 @@ public class NewsFragment extends Fragment {
             adapter.notifyDataSetChanged();
 
         });
-        prev.setOnClickListener(view1 -> {
-            if (pos>0){
-                pos--;
-                newsTopic.setText(topics.get(pos));
-                viewModel.getNewsModels(topics.get(pos),1).observe(getViewLifecycleOwner(),newsModels1 -> adapter.notifyDataSetChanged());
+        newsBinding.prev.setOnClickListener(view1 -> {
+            if (position>0){
+                position--;
+                viewModel.setPosition(position);
+                viewModel.nextPrevNewsTopic(topics.get(position));
             }
         });
-        next.setOnClickListener(view1 -> {
-            if (pos<topics.size()-1){
-                pos++;
-                Log.v("tag","size=="+topics.size()+"current=="+pos);
-                newsTopic.setText(topics.get(pos));
-                viewModel.getNewsModels(topics.get(pos),1).observe(getViewLifecycleOwner(),newsModels1 -> adapter.notifyDataSetChanged());
+        newsBinding.next.setOnClickListener(view1 -> {
+            if (position<topics.size()-1){
+                position++;
+                viewModel.setPosition(position);
+                viewModel.nextPrevNewsTopic(topics.get(position));
             }
         });
 
@@ -85,23 +90,13 @@ public class NewsFragment extends Fragment {
         return view;
     }
 
-    private void initViews(View view) {
-        recyclerView=view.findViewById(R.id.recycler_view);
-        prev=view.findViewById(R.id.prev);
-        next=view.findViewById(R.id.next);
-        newsTopic=view.findViewById(R.id.news_topic);
 
-
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
-
-    }
 
 
 
     private void showProgressDialog() {
         progressDialog = new ProgressDialog(getContext());
-        progressDialog.setMessage("Loading...");
+        progressDialog.setMessage(getString(R.string.loading));
         progressDialog.setCancelable(false);
         progressDialog.show();
     }

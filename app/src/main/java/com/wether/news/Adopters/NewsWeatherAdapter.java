@@ -3,21 +3,18 @@ package com.wether.news.Adopters;
 import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
 import com.wether.news.Activity.NewsWeatherActivity;
-import com.wether.news.Models.NewsweatherModel;
-import com.wether.news.R;
+import com.wether.news.Constants;
+import com.wether.news.Models.NewsWeatherModel;
+import com.wether.news.databinding.ItemLayoutBinding;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -25,63 +22,64 @@ import java.util.List;
 import java.util.Objects;
 
 public class NewsWeatherAdapter extends RecyclerView.Adapter<NewsWeatherAdapter.ViewHolder> {
-    private final List<NewsweatherModel> newsweatherModels;
+    private List<NewsWeatherModel> newsWeatherModels;
     private final Context context;
     private final String uId= Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
-    public NewsWeatherAdapter(List<NewsweatherModel> newsweatherModels, Context context) {
-        this.newsweatherModels = newsweatherModels;
+    public NewsWeatherAdapter(List<NewsWeatherModel> newsWeatherModels, Context context) {
+        this.newsWeatherModels = newsWeatherModels;
         this.context = context;
     }
-
+    public void setNewsWeatherChanges(List<NewsWeatherModel> newsWeatherModels){
+        this.newsWeatherModels=newsWeatherModels;
+        notifyDataSetChanged();
+    }
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view=LayoutInflater.from(parent.getContext()).inflate(R.layout.item_layout,parent,false);
-        return new ViewHolder(view);
+
+        ItemLayoutBinding itemLayoutBinding=ItemLayoutBinding.inflate(LayoutInflater.from(parent.getContext()),parent,false);
+        return new ViewHolder(itemLayoutBinding);
 
     }
 
     @Override
     public void onBindViewHolder(@NonNull NewsWeatherAdapter.ViewHolder holder, int position) {
-        NewsweatherModel model=newsweatherModels.get(position);
-        holder.title.setText(model.getTitle());
-        holder.lastSeen.setText(model.getLastSeen());
-        Glide.with(context).load(model.getImageUrl()).into(holder.imageView);
-        holder.cardView.setOnClickListener(view -> {
+        NewsWeatherModel model= newsWeatherModels.get(position);
+        holder.itemLayoutBinding.cityNameNews.setText(model.getTitle());
+        holder.itemLayoutBinding.lastSeen.setText(model.getLastSeen());
+        Glide.with(context).load(model.getImageUrl()).into(holder.itemLayoutBinding.image);
+        holder.itemLayoutBinding.card.setOnClickListener(view -> {
             Date d = new Date();
-            FirebaseDatabase.getInstance().getReference().child("Users").child(uId).child(model.getType())
-                    .child(model.getKey()).child("timeStamp").setValue(d.getTime());
+            FirebaseDatabase.getInstance().getReference().child(Constants.USERS).child(uId).child(model.getType())
+                    .child(model.getKey()).child(Constants.TIME_STAMP).setValue(d.getTime());
             Intent intent=new Intent(context, NewsWeatherActivity.class);
             ArrayList<String> topics = new ArrayList<>();
-            ArrayList<String> images = new ArrayList<>();
+            ArrayList<String> imagesUrls = new ArrayList<>();
 
-            for (NewsweatherModel model1:newsweatherModels) {
+            for (NewsWeatherModel model1: newsWeatherModels) {
                 topics.add(model1.getTitle());
-                images.add(model1.getImageUrl());
+                imagesUrls.add(model1.getImageUrl());
             }
-            intent.putExtra("key",topics);
-            intent.putExtra("urls",images);
-            intent.putExtra("pos",position);
-            intent.putExtra("type",model.getType());
+            intent.putExtra(Constants.TOPICS,topics);
+            intent.putExtra(Constants.IMAGE_URLS,imagesUrls);
+            intent.putExtra(Constants.POSITION,position);
+            intent.putExtra(Constants.TYPE,model.getType());
             context.startActivity(intent);
         });
     }
 
     @Override
     public int getItemCount() {
-        return newsweatherModels.size();
+        if (newsWeatherModels==null)
+            return 0;
+        return newsWeatherModels.size();
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        ImageView imageView;
-        TextView title,lastSeen;
-        CardView cardView;
-        public ViewHolder(@NonNull View itemView) {
-            super(itemView);
-            imageView=itemView.findViewById(R.id.image);
-            title=itemView.findViewById(R.id.city_name_news);
-            lastSeen=itemView.findViewById(R.id.last_seen);
-            cardView=itemView.findViewById(R.id.card);
+        ItemLayoutBinding itemLayoutBinding;
+        public ViewHolder(@NonNull ItemLayoutBinding itemLayoutBinding) {
+            super(itemLayoutBinding.getRoot());
+            this.itemLayoutBinding=itemLayoutBinding;
 
 
         }

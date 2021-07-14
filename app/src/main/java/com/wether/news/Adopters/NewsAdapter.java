@@ -2,17 +2,14 @@ package com.wether.news.Adopters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.wether.news.Models.NewsModel;
-import com.wether.news.R;
+import com.wether.news.databinding.NewsItemBinding;
 
 import java.util.List;
 
@@ -31,17 +28,18 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.ViewHolder> {
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.news_item, parent, false));
+        NewsItemBinding  newsItemBinding=NewsItemBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+        return new ViewHolder(newsItemBinding);
     }
 
     @Override
     public void onBindViewHolder(@NonNull NewsAdapter.ViewHolder holder, int position) {
         NewsModel model=newsModels.get(position);
-        holder.title.setText(model.getTitle());
-        holder.description.setText(model.getDescription());
-        holder.publishedAt.setText(model.getPublishedAt());
-        holder.source.setText(model.getNewsSource());
-        Glide.with(context).load(model.getImageUrl()).into(holder.imageView);
+        holder.newsItemBinding.title.setText(model.getTitle());
+        holder.newsItemBinding.description.setText(model.getDescription());
+        holder.newsItemBinding.publishedAt.setText(model.getPublishedAt());
+        holder.newsItemBinding.newsSource.setText(model.getNewsSource());
+        Glide.with(context).load(model.getImageUrl()).into(holder.newsItemBinding.image);
 
     }
 
@@ -54,16 +52,10 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.ViewHolder> {
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        ImageView imageView;
-        TextView title,description,publishedAt,source;
-        public ViewHolder(@NonNull View itemView) {
-            super(itemView);
-            imageView=itemView.findViewById(R.id.image);
-            title=itemView.findViewById(R.id.title);
-            description=itemView.findViewById(R.id.description);
-            publishedAt=itemView.findViewById(R.id.published_at);
-            source=itemView.findViewById(R.id.news_source);
-
+        NewsItemBinding newsItemBinding;
+        public ViewHolder(@NonNull NewsItemBinding newsItemBinding) {
+            super(newsItemBinding.getRoot());
+            this.newsItemBinding=newsItemBinding;
         }
     }
 }

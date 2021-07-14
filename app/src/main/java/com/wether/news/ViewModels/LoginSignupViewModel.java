@@ -12,6 +12,8 @@ import com.google.firebase.auth.FirebaseAuthInvalidUserException;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.wether.news.Constants;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -36,11 +38,11 @@ public class LoginSignupViewModel extends ViewModel {
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         // Sign in success, update UI with the signed-in user's information
-                        Log.d("tag", "createUserWithEmail:success");
+                        Log.d(LoginSignupViewModel.class.getSimpleName(), "createUserWithEmail:success");
                         FirebaseUser user = mAuth.getCurrentUser();
                         Map<String, String> map=new HashMap<>();
-                        map.put("email",email);
-                        map.put("pass",password);
+                        map.put(Constants.EMAIL,email);
+                        map.put(Constants.PASSWORD,password);
                         db.collection("Users").document(Objects.requireNonNull(mAuth.getCurrentUser()).getUid())
                                 .set(map).addOnSuccessListener(unused -> {
                                     //goInMainActivity();
@@ -54,7 +56,7 @@ public class LoginSignupViewModel extends ViewModel {
                     }
                     else {
                         // If sign in fails, display a message to the user.
-                        Log.w("tag", "createUserWithEmail:failure", task.getException());
+                        Log.e(LoginSignupViewModel.class.getSimpleName(), "createUserWithEmail:failure", task.getException());
 
                         stringMutableLiveData.postValue("Authentication failed.");
                         mutableLiveData.postValue(null);
@@ -69,21 +71,18 @@ public class LoginSignupViewModel extends ViewModel {
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         // Sign in success, update UI with the signed-in user's information
-                        Log.d("tag", "signInWithEmail:success");
+                        Log.d(LoginSignupViewModel.class.getSimpleName(), "signInWithEmail:success");
                         FirebaseUser user = mAuth.getCurrentUser();
-                        //goInMainActivity();
                         mutableLiveData.postValue(user);
 
                     } else if(task.getException() instanceof FirebaseAuthInvalidCredentialsException){
                         //invalid pass
-                        //passwordInputLayout.setError("");
 
                         stringMutableLiveData.postValue("Wrong password entered");
                         mutableLiveData.postValue(null);
                     }
                     else if(task.getException() instanceof FirebaseAuthInvalidUserException){
                         //Email not in used
-                        //emailInputLayout.setError("");
 
                         stringMutableLiveData.postValue("Wrong Email entered");
                         mutableLiveData.postValue(null);

@@ -1,13 +1,13 @@
 package com.wether.news.Models;
 
-public class NewsweatherModel {
+public class NewsWeatherModel {
     private String title;
     private final String lastSeen;
     private final String imageUrl;
     private String type;
     private final String key;
 
-    public NewsweatherModel(String title, String lastSeen, String imageUrl, String type, String key) {
+    public NewsWeatherModel(String title, String lastSeen, String imageUrl, String type, String key) {
         this.title = title;
         this.lastSeen = lastSeen;
         this.imageUrl = imageUrl;

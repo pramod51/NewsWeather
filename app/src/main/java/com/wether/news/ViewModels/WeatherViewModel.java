@@ -1,13 +1,11 @@
 package com.wether.news.ViewModels;
 
-import android.util.Log;
-
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.wether.news.Repositories.WeatherRepository;
-import com.wether.news.WetherApi.Weather;
+import com.wether.news.Api.Weather;
 
 
 public class WeatherViewModel extends ViewModel {

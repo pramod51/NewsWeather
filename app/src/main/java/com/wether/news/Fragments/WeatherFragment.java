@@ -19,7 +19,7 @@ import com.bumptech.glide.Glide;
 import com.wether.news.Constants;
 import com.wether.news.R;
 import com.wether.news.ViewModels.WeatherViewModel;
-import com.wether.news.WetherApi.Weather;
+import com.wether.news.Api.Weather;
 import com.wether.news.databinding.FragmentWeatherBinding;
 
 import java.util.ArrayList;

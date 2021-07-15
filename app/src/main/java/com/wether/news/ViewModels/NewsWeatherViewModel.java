@@ -9,8 +9,8 @@ import androidx.lifecycle.ViewModel;
 
 import com.wether.news.Models.NewsWeatherModel;
 import com.wether.news.Repositories.ImageRepository;
-import com.wether.news.Repositories.NewsTopicRepo;
-import com.wether.news.Repositories.WeatherPlaceRepo;
+import com.wether.news.Repositories.NewsRepository;
+import com.wether.news.Repositories.WeatherRepository;
 
 import java.util.List;
 import java.util.Map;
@@ -23,7 +23,7 @@ public class NewsWeatherViewModel extends ViewModel {
         if (newsWeatherMutableLD!=null)
             return;
         newsWeatherMutableLD=new MutableLiveData<>();
-        NewsTopicRepo newsTopicRepo = NewsTopicRepo.getInstance();
+        NewsRepository newsTopicRepo = NewsRepository.getInstance();
         isUpdating.setValue(true);
         newsTopicRepo.setNewsTopics(firebaseNewsTopics);
 
@@ -33,7 +33,7 @@ public class NewsWeatherViewModel extends ViewModel {
         if (newsWeatherMutableLD!=null)
             return;
         newsWeatherMutableLD=new MutableLiveData<>();
-        WeatherPlaceRepo weatherPlaceRepo = WeatherPlaceRepo.getInstance();
+        WeatherRepository weatherPlaceRepo = WeatherRepository.getInstance();
         weatherPlaceRepo.setWeatherPlace(firebaseWeatherPlace);
     }
 
@@ -45,7 +45,7 @@ public class NewsWeatherViewModel extends ViewModel {
         return isUpdating;
     }
 
-    private final NewsTopicRepo.FirebaseNewsTopics firebaseNewsTopics=new NewsTopicRepo.FirebaseNewsTopics() {
+    private final NewsRepository.FirebaseNewsTopics firebaseNewsTopics=new NewsRepository.FirebaseNewsTopics() {
         @Override
         public void onFailure(String error) {
             isUpdating.postValue(false);
@@ -60,7 +60,7 @@ public class NewsWeatherViewModel extends ViewModel {
         }
     };
 
-    private final WeatherPlaceRepo.FirebaseWeatherPlace firebaseWeatherPlace=new WeatherPlaceRepo.FirebaseWeatherPlace() {
+    private final WeatherRepository.FirebaseWeatherPlace firebaseWeatherPlace=new WeatherRepository.FirebaseWeatherPlace() {
         @Override
         public void onFailure(String error) {
             Log.e(NewsWeatherViewModel.class.getSimpleName(),error+"");

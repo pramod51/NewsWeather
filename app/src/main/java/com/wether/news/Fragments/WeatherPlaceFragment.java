@@ -18,6 +18,7 @@ import com.wether.news.Constants;
 import com.wether.news.R;
 import com.wether.news.ViewModels.NewsWeatherViewModel;
 import com.wether.news.databinding.FragmentNewsTopicWeatherPlaceBinding;
+import com.wether.news.databinding.PopupLayoutBinding;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -67,17 +68,17 @@ public class WeatherPlaceFragment extends Fragment  {
     private void openDialog(){
         Dialog dialog = new Dialog(getActivity());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setCancelable(false);
-        dialog.setContentView(R.layout.popup_layout);
-        TextInputEditText topic=dialog.findViewById(R.id.add);
+        PopupLayoutBinding popupLayoutBinding=PopupLayoutBinding.inflate(LayoutInflater.from(getContext()),null,false);
+        dialog.setContentView(popupLayoutBinding.getRoot());
+        popupLayoutBinding.add.setHint(R.string.enter_topic);
         dialog.show();
-        dialog.findViewById(R.id.add_item).setOnClickListener(view -> {
+        popupLayoutBinding.addItem.setOnClickListener(view -> {
 
             Date d = new Date();
             Map<String, Object> map=new HashMap<>();
-            map.put(Constants.TOPICS, Objects.requireNonNull(topic.getText()).toString());
+            map.put(Constants.TOPICS, Objects.requireNonNull(popupLayoutBinding.add.getText()).toString());
             map.put(Constants.TIME_STAMP,d.getTime());
-            viewModel.getImages(Objects.requireNonNull(topic.getText()).toString().replace(" ","+"),map,getString(R.string.weather));
+            viewModel.getImages(Objects.requireNonNull(popupLayoutBinding.add.getText()).toString().replace(" ","+"),map,getString(R.string.weather));
 
             dialog.dismiss();
         });
